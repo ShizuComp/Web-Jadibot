@@ -23,7 +23,7 @@ app.use(limit);
 
 
 app.get("/", async (req, res) => {
-	let { jadibot } = JSON.parse(await fs.readFileSync("./jadibot.json", "utf-8"))
+	let { jadibot } = JSON.parse(await fs.readFileSync(path.join(__dirname, "./jadibot.json"), "utf-8"))
   try {
     const jadibots = jadibot.map((jadi) => ({
       id: jadi.id.split("@")[0],
