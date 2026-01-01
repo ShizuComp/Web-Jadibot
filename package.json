@@ -1,16 +1,16 @@
 {
-  "name": "jadibot_draclow",
+  "name": "Website Jadibot",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "jadibot",
-    "draclow"
+    "website",
+    "jadibot"
   ],
-  "author": "Piahn",
-  "developer": "Syarzz",
+  "author": "Piahn Wijaya",
+  "developer": "Syarzz Hanaka",
   "license": "ISC",
   "description": "",
   "dependencies": {
