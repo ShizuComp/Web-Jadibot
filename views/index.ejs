@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            animation: {
+              "fade-in": "fadeIn 0.5s ease-in-out",
+              "slide-down": "slideDown 0.3s ease-out",
+              "bounce-in": "bounceIn 0.6s ease-out",
+              shake: "shake 0.5s ease-in-out",
+            },
+            keyframes: {
+              bounceIn: {
+                "0%": { transform: "scale(0.3)", opacity: "0" },
+                "50%": { transform: "scale(1.05)" },
+                "70%": { transform: "scale(0.9)" },
+                "100%": { transform: "scale(1)", opacity: "1" },
+              },
+              shake: {
+                "0%, 100%": { transform: "translateX(0)" },
+                "10%, 30%, 50%, 70%, 90%": { transform: "translateX(-5px)" },
+                "20%, 40%, 60%, 80%": { transform: "translateX(5px)" },
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes progressShrink {
+        from {
+          width: 100%;
+        }
+        to {
+          width: 0%;
+        }
+      }
+
+      .custom-notification {
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+
+      @media (max-width: 640px) {
+        .custom-notification {
+          margin: 0 !important;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .custom-notification button {
+          padding: 0.75rem;
+          margin: -0.5rem;
+        }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .custom-notification {
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <header class="bg-white shadow-lg border-b-4 border-blue-500">
+      <div class="max-w-7xl mx-auto px-4 py-6">
+        <h1
+          class="text-4xl font-bold text-gray-800 text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent animate-fade-in"
+        >
+          <%= title %>
+        </h1>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+      <div
+        class="mb-8 flex flex-col sm:flex-row gap-4 items-center justify-between animate-slide-down"
+      >
+        <button
+          onclick="refreshWithLoading(event)"
+          class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+        >
+          <svg
+            class="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            ></path>
+          </svg>
+          Refresh Data
+        </button>
+
+        <div
+          class="text-sm text-gray-500 bg-white px-4 py-2 rounded-full shadow"
+        >
+          <span class="font-medium">Last updated:</span> <%= new Date((+new Date) + (1000 * 60 * 60 * 7)).toLocaleString("id-ID") %>
+        </div>
+      </div>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+      <div
+        class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg animate-slide-down"
+      >
+        <div class="flex items-center">
+          <svg
+            class="w-6 h-6 text-red-500 mr-3"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+          <p class="text-red-700 font-medium"><%= error %></p>
+        </div>
+      </div>
+      <% } %>
+
+      <div
+        class="bg-white rounded-xl shadow-xl overflow-hidden animate-fade-in"
+      >
+        <% if (jadibots && jadibots.length > 0) { %>
+        <div class="bg-gradient-to-r from-green-500 to-blue-600 px-6 py-4">
+          <div class="flex items-center justify-between text-white">
+            <div class="flex items-center">
+              <svg
+                class="w-8 h-8 mr-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                ></path>
+              </svg>
+              <h2 class="text-2xl font-bold">Jadibot Dashboard</h2>
+            </div>
+            <div class="bg-white bg-opacity-20 px-4 py-2 rounded-full">
+              <span class="text-lg font-semibold"
+                >Total: <%= jadibots.length %> Bot<%= jadibots.length > 1 ? 's'
+                : '' %></span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th
+                  class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
+                  No
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
+                  ID WhatsApp
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
+                  Key ID
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
+                  Owner
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
+                  Status
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <% jadibots.forEach((jadibot, index) => { %>
+              <tr class="hover:bg-gray-50 transition-colors duration-150">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div
+                    class="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold"
+                  >
+                    <%= index + 1 %>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <svg
+                      class="w-5 h-5 text-green-500 mr-2"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
+                        clip-rule="evenodd"
+                      ></path>
+                    </svg>
+                    <a href="http://wa.me/<%= jadibot.id %>">
+                      <span class="text-sm font-mono text-gray-900"
+                        ><%= jadibot.id %></span
+                      >
+                    </a>
+                  </div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="group relative">
+                    <span
+                      class="text-sm text-gray-600 font-mono bg-gray-100 px-3 py-1 rounded cursor-help"
+                      title="<%= jadibot.keyid %>"
+                    >
+                      <%= jadibot.keyid.length > 15 ? jadibot.keyid.substring(0,
+                      15) + '...' : jadibot.keyid %>
+                    </span>
+                    <div
+                      class="invisible group-hover:visible absolute z-10 top-full left-0 mt-1 p-2 bg-gray-800 text-white text-xs rounded shadow-lg max-w-xs break-all"
+                    >
+                      <%= jadibot.keyid %>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <svg
+                      class="w-5 h-5 text-purple-500 mr-2"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                        clip-rule="evenodd"
+                      ></path>
+                    </svg>
+                    <a href="http://wa.me/<%= jadibot.owner %>">
+                      <span class="text-sm font-mono text-gray-900"
+                        ><%= jadibot.owner %></span
+                      >
+                    </a>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-<%= jadibot.warna %>-100 text-<%= jadibot.warna %>-800"
+                  >
+                    <span
+                      class="w-2 h-2 bg-<%= jadibot.warna %>-400 rounded-full mr-1 animate-pulse"
+                    ></span>
+                    <%= jadibot.status %>
+                  </span>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+        <% } else { %>
+        <div class="text-center py-16">
+          <svg
+            class="mx-auto h-24 w-24 text-gray-300 mb-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1"
+              d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h2a2 2 0 002-2z"
+            ></path>
+          </svg>
+          <h3 class="text-2xl font-semibold text-gray-700 mb-2">
+            Tidak ada data jadibot
+          </h3>
+          <p class="text-gray-500 mb-8">
+            Belum ada bot yang terdaftar dalam sistem.
+          </p>
+        </div>
+        <% } %>
+      </div>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 mt-12">
+      <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="text-center text-gray-600">
+          <div class="flex items-center justify-center mb-4">
+            <div
+              class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3"
+            >
+              <svg
+                class="w-6 h-6 text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"
+                ></path>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xl font-bold text-gray-800">Shizuno Company</p>
+              <p class="text-sm text-gray-500">Jadibot Management System</p>
+            </div>
+          </div>
+          <p class="text-sm">
+            &copy; 2025-2025 All rights reserved. Made with ❤️ for WhatsApp Bot
+            Management
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Auto refresh setiap 30 detik (optional)
+      let autoRefreshInterval;
+
+      function toggleAutoRefresh() {
+        if (autoRefreshInterval) {
+          clearInterval(autoRefreshInterval);
+          autoRefreshInterval = null;
+          showNotification("Auto refresh disabled", "info");
+        } else {
+          autoRefreshInterval = setInterval(() => {
+            console.log("Auto refreshing data...");
+            location.reload();
+          }, 60000);
+          showNotification("Auto refresh enabled (60s)", "success");
+        }
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "F5" || (event.ctrlKey && event.key === "r")) {
+          event.preventDefault();
+          location.reload();
+        }
+        if (event.ctrlKey && event.key === "a" && event.altKey) {
+          event.preventDefault();
+          toggleAutoRefresh();
+        }
+      });
+
+      // Responsive notification system
+      function showNotification(message, type = "info", duration = 4000) {
+        const existingNotifications = document.querySelectorAll(
+          ".custom-notification"
+        );
+        existingNotifications.forEach((notif) => {
+          if (notif.dataset.type === type) {
+            notif.remove();
+          }
+        });
+
+        const notification = document.createElement("div");
+        notification.dataset.type = type;
+        notification.className = "custom-notification";
+
+        // Get notification colors and icons
+        const notificationStyles = {
+          success: {
+            bgColor: "bg-green-500",
+            textColor: "text-white",
+            icon: `<svg class="flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                   </svg>`,
+          },
+          error: {
+            bgColor: "bg-red-500",
+            textColor: "text-white",
+            icon: `<svg class="flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                   </svg>`,
+          },
+          warning: {
+            bgColor: "bg-yellow-500",
+            textColor: "text-white",
+            icon: `<svg class="flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                   </svg>`,
+          },
+          info: {
+            bgColor: "bg-blue-500",
+            textColor: "text-white",
+            icon: `<svg class="flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                   </svg>`,
+          },
+        };
+
+        const style = notificationStyles[type] || notificationStyles.info;
+
+        // Responsive positioning and styling
+        notification.innerHTML = `
+          <div class="fixed z-50 transform transition-all duration-500 ease-in-out
+                      ${style.bgColor} ${style.textColor}
+                      /* Mobile positioning */
+                      top-4 left-4 right-4 mx-auto max-w-sm
+                      /* Tablet positioning */  
+                      sm:top-4 sm:right-4 sm:left-auto sm:mx-0 sm:max-w-md
+                      /* Desktop positioning */
+                      lg:max-w-lg
+                      /* Styling */
+                      rounded-xl shadow-2xl backdrop-blur-sm bg-opacity-95
+                      translate-y-[-100px] opacity-0 scale-95
+                      notification-enter">
+            <div class="p-4 sm:p-5 lg:p-6">
+              <div class="flex items-start space-x-3">
+                <div class="flex-shrink-0 mt-0.5">
+                  ${style.icon}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm sm:text-base lg:text-lg font-medium leading-relaxed break-words">
+                    ${message}
+                  </p>
+                  <!-- Progress bar -->
+                  <div class="mt-3 bg-white bg-opacity-30 rounded-full h-1 overflow-hidden">
+                    <div class="progress-bar h-full bg-white rounded-full transition-all duration-100 ease-linear" 
+                         style="width: 100%; animation: progressShrink ${duration}ms linear forwards;"></div>
+                  </div>
+                </div>
+                <button onclick="this.closest('.custom-notification').remove()" 
+                        class="flex-shrink-0 ml-2 p-1 rounded-full hover:bg-white hover:bg-opacity-20 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Trigger entrance animation
+        requestAnimationFrame(() => {
+          const notifElement = notification.querySelector(
+            ".notification-enter"
+          );
+          notifElement.classList.remove(
+            "translate-y-[-100px]",
+            "opacity-0",
+            "scale-95"
+          );
+          notifElement.classList.add(
+            "translate-y-0",
+            "opacity-100",
+            "scale-100"
+          );
+        });
+
+        // Auto remove after duration
+        const autoRemoveTimer = setTimeout(() => {
+          removeNotification(notification);
+        }, duration);
+
+        // Store timer for manual removal
+        notification.autoRemoveTimer = autoRemoveTimer;
+
+        // Add touch/swipe to dismiss on mobile
+        let startY = 0;
+        let currentY = 0;
+        let isDragging = false;
+
+        const notifElement = notification.querySelector("div");
+
+        // Touch events for mobile swipe
+        notifElement.addEventListener("touchstart", (e) => {
+          startY = e.touches[0].clientY;
+          isDragging = true;
+          notifElement.style.transition = "none";
+        });
+
+        notifElement.addEventListener("touchmove", (e) => {
+          if (!isDragging) return;
+          currentY = e.touches[0].clientY;
+          const deltaY = currentY - startY;
+
+          if (deltaY < 0) {
+            notifElement.style.transform = `translateY(${deltaY}px)`;
+            notifElement.style.opacity = Math.max(0.3, 1 + deltaY / 100);
+          }
+        });
+
+        notifElement.addEventListener("touchend", () => {
+          if (!isDragging) return;
+          isDragging = false;
+
+          const deltaY = currentY - startY;
+          notifElement.style.transition = "all 0.3s ease-out";
+
+          if (deltaY < -50) {
+            removeNotification(notification);
+          } else {
+            notifElement.style.transform = "translateY(0)";
+            notifElement.style.opacity = "1";
+          }
+        });
+
+        return notification;
+      }
+
+      // Enhanced remove notification function
+      function removeNotification(notification) {
+        if (!notification || !notification.parentNode) return;
+
+        // Clear auto-remove timer
+        if (notification.autoRemoveTimer) {
+          clearTimeout(notification.autoRemoveTimer);
+        }
+
+        const notifElement = notification.querySelector("div");
+        notifElement.classList.add(
+          "translate-y-[-100px]",
+          "opacity-0",
+          "scale-95"
+        );
+
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.remove();
+          }
+        }, 500);
+      }
+
+      // Notification queue system for multiple notifications
+      let notificationQueue = [];
+      let isProcessingQueue = false;
+
+      function queueNotification(message, type = "info", duration = 4000) {
+        notificationQueue.push({ message, type, duration });
+        processNotificationQueue();
+      }
+
+      function processNotificationQueue() {
+        if (isProcessingQueue || notificationQueue.length === 0) return;
+
+        isProcessingQueue = true;
+        const { message, type, duration } = notificationQueue.shift();
+
+        showNotification(message, type, duration);
+
+        setTimeout(() => {
+          isProcessingQueue = false;
+          processNotificationQueue();
+        }, 500);
+      }
+
+      // Batch notification for multiple messages
+      function showBatchNotification(messages, type = "info") {
+        if (messages.length === 1) {
+          showNotification(messages[0], type);
+          return;
+        }
+
+        const batchMessage = `
+          <div class="space-y-1">
+            <div class="font-semibold mb-2">${
+              messages.length
+            } notifications:</div>
+            ${messages
+              .map((msg) => `<div class="text-sm opacity-90">• ${msg}</div>`)
+              .join("")}
+          </div>
+        `;
+
+        showNotification(batchMessage, type, 6000);
+      }
+
+      // Page load animation with enhanced notifications
+      window.addEventListener("load", () => {
+        document.body.classList.add("loaded");
+        showNotification("✅ Dashboard loaded successfully!", "success");
+      });
+
+      // Enhanced refresh with loading state and notifications
+      function refreshWithLoading(event) {
+        const btn = event
+          ? event.target
+          : document.querySelector('button[onclick*="refreshWithLoading"]');
+        if (!btn) return;
+
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `
+          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span class="hidden sm:inline">Refreshing...</span>
+          <span class="sm:hidden">Loading...</span>
+        `;
+        btn.disabled = true;
+
+        showNotification("🔄 Refreshing data...", "info", 2000);
+
+        setTimeout(() => {
+          location.reload();
+        }, 1000);
+      }
+
+      // Demo notifications for testing (remove in production)
+      function showDemoNotifications() {
+        const demos = [
+          { message: "🎉 Welcome to Jadibot Dashboard!", type: "success" },
+          { message: "⚠️ Check your connection", type: "warning" },
+          { message: "❌ Failed to connect to server", type: "error" },
+          { message: "📊 Data synced successfully", type: "info" },
+        ];
+
+        demos.forEach((demo, index) => {
+          setTimeout(() => {
+            queueNotification(demo.message, demo.type);
+          }, index * 1500);
+        });
+      }
+
+      // Network status notifications
+      window.addEventListener("online", () => {
+        showNotification("🌐 Connection restored", "success");
+      });
+
+      window.addEventListener("offline", () => {
+        showNotification(
+          "📡 Connection lost - Working offline",
+          "warning",
+          6000
+        );
+      });
+
+      // Visibility change notifications
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+          showNotification("👋 Welcome back!", "info", 2000);
+        }
+      });
+    </script>
+  </body>
+</html>
